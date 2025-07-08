@@ -19,6 +19,8 @@ import {
   Paper,
   Stack,
   Badge,
+  Select,
+  MenuItem
 } from '@mui/material';
 import {
   FlightTakeoff,
@@ -60,6 +62,28 @@ const FlightResults = () => {
   const [sortBy, setSortBy] = useState('best');
   const [filters, setFilters] = useState(getDefaultFilters());
   const [filterModalOpen, setFilterModalOpen] = useState(false);
+  const [currency, setCurrency] = useState('INR');
+
+  const currencyRates = {
+    INR: 1,
+    USD: 0.012,
+    EUR: 0.011,
+    GBP: 0.0095,
+    JPY: 1.7,
+  };
+  const currencySymbols = {
+    INR: '₹',
+    USD: '$',
+    EUR: '€',
+    GBP: '£',
+    JPY: '¥',
+  };
+
+  const formatPriceValue = (price) => {
+    if (price == null) return '-';
+    const converted = price * currencyRates[currency];
+    return `${currencySymbols[currency]}${converted.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+  };
 
   // Get search parameters from URL with fallbacks
   const searchData = {
@@ -245,6 +269,17 @@ const FlightResults = () => {
             {formatDate(searchData.departureDate)} • {searchData.adults} passenger{searchData.adults > 1 ? 's' : ''} • {searchData.cabinClass}
           </Typography>
         </Box>
+        {/* Currency Selector */}
+        <Select
+          size="small"
+          value={currency}
+          onChange={(e) => setCurrency(e.target.value)}
+          sx={{ minWidth: 90 }}
+        >
+          {['INR', 'USD', 'EUR', 'GBP', 'JPY'].map((cur) => (
+            <MenuItem key={cur} value={cur}>{cur}</MenuItem>
+          ))}
+        </Select>
       </Box>
 
       {/* Filters Bar */}
@@ -340,7 +375,7 @@ const FlightResults = () => {
                 Cheapest
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
-                from ₹{cheapestPrice?.toLocaleString()}
+                from {cheapestPrice ? formatPriceValue(cheapestPrice) : '-'}
               </Typography>
             </Paper>
           </Grid>
@@ -428,7 +463,7 @@ const FlightResults = () => {
                       {/* Price */}
                       <Grid item xs={2}>
                         <Typography variant="h6" sx={{ fontWeight: 600, color: '#202124', textAlign: 'right' }}>
-                          {flight.price.formatted}
+                          {formatPriceValue(flight.price.raw)}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'right' }}>
                           {searchData.tripType === 'roundtrip' ? 'round trip' : 'one way'}
@@ -473,7 +508,7 @@ const FlightResults = () => {
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Box sx={{ textAlign: 'right' }}>
                           <Typography variant="h6" sx={{ fontWeight: 600, color: '#202124', fontSize: '1rem' }}>
-                            {flight.price.formatted}
+                            {formatPriceValue(flight.price.raw)}
                           </Typography>
                           <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
                             {searchData.tripType === 'roundtrip' ? 'round trip' : 'one way'}
@@ -630,7 +665,7 @@ const FlightResults = () => {
                       </Grid>
                       <Grid item xs={2}>
                         <Typography variant="h6" sx={{ fontWeight: 600, color: '#202124', textAlign: 'right' }}>
-                          {flight.price.formatted}
+                          {formatPriceValue(flight.price.raw)}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'right' }}>
                           round trip
@@ -673,7 +708,7 @@ const FlightResults = () => {
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Box sx={{ textAlign: 'right' }}>
                           <Typography variant="h6" sx={{ fontWeight: 600, color: '#202124', fontSize: '1rem' }}>
-                            {flight.price.formatted}
+                            {formatPriceValue(flight.price.raw)}
                           </Typography>
                           <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
                             round trip
