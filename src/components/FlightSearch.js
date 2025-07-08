@@ -22,12 +22,18 @@ import {
   CircularProgress,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import PriceCalendar from './PriceCalendar';
+import PassengerSelector from './PassengerSelector';
+import ClassSelector from './ClassSelector';
+import RecentSearches from './RecentSearches';
+import recentSearchesService from '../services/recentSearchesService';
 import {
   FlightTakeoff,
   FlightLand,
   Person,
   Search,
   SwapHoriz,
+  AirlineSeatReclineExtra,
 } from '@mui/icons-material';
 import dayjs from 'dayjs';
 import { logTestInstructions } from '../utils/testData';
@@ -496,6 +502,12 @@ const FlightSearch = () => {
   const [returnDate, setReturnDate] = useState(dayjs().add(7, 'day'));
   const [passengers, setPassengers] = useState(1);
   const [travelClass, setTravelClass] = useState('economy');
+  const [priceCalendarOpen, setPriceCalendarOpen] = useState(false);
+  const [calendarType, setCalendarType] = useState('departure'); // 'departure' or 'return'
+  const [passengerSelectorOpen, setPassengerSelectorOpen] = useState(false);
+  const [classSelectorOpen, setClassSelectorOpen] = useState(false);
+  const [passengerData, setPassengerData] = useState({ adults: 1, children: 0, infants: 0, total: 1 });
+  const [classData, setClassData] = useState({ id: 'economy', name: 'Economy', features: [] });
   
   // Autocomplete states
   const [originOptions, setOriginOptions] = useState([]);
@@ -638,6 +650,20 @@ const FlightSearch = () => {
   const handleSearch = () => {
     if (!origin || !destination) return;
 
+    // Save search to recent searches
+    const searchData = {
+      origin,
+      destination,
+      departureDate: departureDate.format('YYYY-MM-DD'),
+      returnDate: returnDate.format('YYYY-MM-DD'),
+      tripType,
+      passengers,
+      travelClass,
+      passengerData,
+      classData
+    };
+    recentSearchesService.saveSearch(searchData);
+
     // Map travel class to API expected format
     const cabinClassMap = {
       'economy': 'economy',
@@ -666,6 +692,55 @@ const FlightSearch = () => {
 
     // Navigate to results page with search parameters
     navigate(`/results?${searchParams.toString()}`);
+  };
+
+  const openPriceCalendar = (type) => {
+    setCalendarType(type);
+    setPriceCalendarOpen(true);
+  };
+
+  const handleDateSelect = (date) => {
+    if (calendarType === 'departure') {
+      setDepartureDate(date);
+      // Auto-adjust return date if it's before departure date
+      if (tripType === 'roundtrip' && returnDate.isBefore(date)) {
+        setReturnDate(date.add(1, 'day'));
+      }
+    } else {
+      setReturnDate(date);
+    }
+    setPriceCalendarOpen(false);
+  };
+
+  const handlePassengerConfirm = (data) => {
+    setPassengerData(data);
+    setPassengers(data.total); // Keep backward compatibility
+  };
+
+  const handleClassConfirm = (data) => {
+    setClassData(data);
+    setTravelClass(data.id); // Keep backward compatibility
+  };
+
+  const handleSelectRecentSearch = (search) => {
+    // Populate form with recent search data
+    if (search.origin) setOrigin(search.origin);
+    if (search.destination) setDestination(search.destination);
+    if (search.departureDate) setDepartureDate(dayjs(search.departureDate));
+    if (search.returnDate) setReturnDate(dayjs(search.returnDate));
+    if (search.tripType) setTripType(search.tripType);
+    if (search.passengerData) {
+      setPassengerData(search.passengerData);
+      setPassengers(search.passengerData.total);
+    }
+    if (search.classData) {
+      setClassData(search.classData);
+      setTravelClass(search.classData.id);
+    }
+    
+    // Update input values for autocomplete
+    if (search.origin) setOriginInputValue(search.origin.presentation.suggestionTitle || '');
+    if (search.destination) setDestinationInputValue(search.destination.presentation.suggestionTitle || '');
   };
 
   return (
@@ -784,13 +859,37 @@ const FlightSearch = () => {
                   )}
                   noOptionsText="Type to search airports..."
                 />
-                <DatePicker
-                  label="Departure Date"
-                  value={departureDate}
-                  onChange={(newValue) => setDepartureDate(newValue)}
-                  renderInput={(params) => <TextField {...params} fullWidth size="medium" />}
-                  minDate={dayjs()}
-                />
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  size="large"
+                  onClick={() => openPriceCalendar('departure')}
+                  sx={{
+                    justifyContent: 'flex-start',
+                    textAlign: 'left',
+                    textTransform: 'none',
+                    py: 2,
+                    px: 2,
+                    color: '#333',
+                    borderColor: '#d0d7de',
+                    '&:hover': {
+                      borderColor: '#1976d2',
+                      backgroundColor: 'rgba(25, 118, 210, 0.04)'
+                    }
+                  }}
+                >
+                  <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                    <Typography variant="caption" color="text.secondary">
+                      Departure Date
+                    </Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      {departureDate.format('MMM DD, YYYY')}
+                    </Typography>
+                    <Typography variant="caption" color="primary">
+                      View prices by date →
+                    </Typography>
+                  </Box>
+                </Button>
               </Box>
             </Grid>
             
@@ -861,13 +960,37 @@ const FlightSearch = () => {
                   noOptionsText="Type to search airports..."
                 />
                 {tripType === 'roundtrip' && (
-                  <DatePicker
-                    label="Return Date"
-                    value={returnDate}
-                    onChange={(newValue) => setReturnDate(newValue)}
-                    renderInput={(params) => <TextField {...params} fullWidth size="medium" />}
-                    minDate={departureDate}
-                  />
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    size="large"
+                    onClick={() => openPriceCalendar('return')}
+                    sx={{
+                      justifyContent: 'flex-start',
+                      textAlign: 'left',
+                      textTransform: 'none',
+                      py: 2,
+                      px: 2,
+                      color: '#333',
+                      borderColor: '#d0d7de',
+                      '&:hover': {
+                        borderColor: '#1976d2',
+                        backgroundColor: 'rgba(25, 118, 210, 0.04)'
+                      }
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                      <Typography variant="caption" color="text.secondary">
+                        Return Date
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        {returnDate.format('MMM DD, YYYY')}
+                      </Typography>
+                      <Typography variant="caption" color="primary">
+                        View prices by date →
+                      </Typography>
+                    </Box>
+                  </Button>
                 )}
               </Box>
             </Grid>
@@ -877,41 +1000,79 @@ const FlightSearch = () => {
           {/* Passengers and Class */}
           <Grid container spacing={2} sx={{ marginBottom: 4 }} justifyContent="space-between" >
             <Grid item xs={12} md={5}>
-              <FormControl fullWidth size="medium">
-                <InputLabel>Passengers</InputLabel>
-                <Select
-                  value={passengers}
-                  label="Passengers"
-                  onChange={(e) => setPassengers(e.target.value)}
-                  startAdornment={
-                    <InputAdornment position="start">
-                      <Person className="text-gray-500 ml-2" />
-                    </InputAdornment>
+              <Button
+                fullWidth
+                variant="outlined"
+                size="large"
+                onClick={() => setPassengerSelectorOpen(true)}
+                sx={{
+                  justifyContent: 'flex-start',
+                  textAlign: 'left',
+                  textTransform: 'none',
+                  py: 2,
+                  px: 2,
+                  color: '#333',
+                  borderColor: '#d0d7de',
+                  '&:hover': {
+                    borderColor: '#1976d2',
+                    backgroundColor: 'rgba(25, 118, 210, 0.04)'
                   }
-                >
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-                    <MenuItem key={num} value={num}>
-                      {num} {num === 1 ? 'Passenger' : 'Passengers'}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
+                  <Person sx={{ color: 'text.secondary' }} />
+                  <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                    <Typography variant="caption" color="text.secondary">
+                      Passengers
+                    </Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      {passengerData.total} passenger{passengerData.total > 1 ? 's' : ''}
+                    </Typography>
+                    <Typography variant="caption" color="primary">
+                      {passengerData.adults > 1 ? `${passengerData.adults} adults` : '1 adult'}
+                      {passengerData.children > 0 && `, ${passengerData.children} child${passengerData.children > 1 ? 'ren' : ''}`}
+                      {passengerData.infants > 0 && `, ${passengerData.infants} infant${passengerData.infants > 1 ? 's' : ''}`}
+                    </Typography>
+                  </Box>
+                </Box>
+              </Button>
             </Grid>
 
             <Grid item xs={12} md={5}>
-              <FormControl fullWidth size="medium">
-                <InputLabel>Class</InputLabel>
-                <Select
-                  value={travelClass}
-                  label="Class"
-                  onChange={(e) => setTravelClass(e.target.value)}
-                >
-                  <MenuItem value="economy">Economy</MenuItem>
-                  <MenuItem value="premium">Premium Economy</MenuItem>
-                  <MenuItem value="business">Business</MenuItem>
-                  <MenuItem value="first">First Class</MenuItem>
-                </Select>
-              </FormControl>
+              <Button
+                fullWidth
+                variant="outlined"
+                size="large"
+                onClick={() => setClassSelectorOpen(true)}
+                sx={{
+                  justifyContent: 'flex-start',
+                  textAlign: 'left',
+                  textTransform: 'none',
+                  py: 2,
+                  px: 2,
+                  color: '#333',
+                  borderColor: '#d0d7de',
+                  '&:hover': {
+                    borderColor: '#1976d2',
+                    backgroundColor: 'rgba(25, 118, 210, 0.04)'
+                  }
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
+                  <AirlineSeatReclineExtra sx={{ color: 'text.secondary' }} />
+                  <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                    <Typography variant="caption" color="text.secondary">
+                      Travel Class
+                    </Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      {classData.name}
+                    </Typography>
+                    <Typography variant="caption" color="primary">
+                      View amenities & features →
+                    </Typography>
+                  </Box>
+                </Box>
+              </Button>
             </Grid>
           </Grid>
 
@@ -981,6 +1142,35 @@ const FlightSearch = () => {
         </CardContent>
       </Card>
 
+      {/* Recent Searches */}
+      <RecentSearches onSelectSearch={handleSelectRecentSearch} />
+
+      {/* Price Calendar Modal */}
+      <PriceCalendar
+        open={priceCalendarOpen}
+        onClose={() => setPriceCalendarOpen(false)}
+        onDateSelect={handleDateSelect}
+        selectedDate={calendarType === 'departure' ? departureDate : returnDate}
+        origin={origin}
+        destination={destination}
+        minDate={calendarType === 'departure' ? dayjs() : departureDate}
+      />
+
+      {/* Passenger Selector Modal */}
+      <PassengerSelector
+        open={passengerSelectorOpen}
+        onClose={() => setPassengerSelectorOpen(false)}
+        onConfirm={handlePassengerConfirm}
+        initialData={passengerData}
+      />
+
+      {/* Class Selector Modal */}
+      <ClassSelector
+        open={classSelectorOpen}
+        onClose={() => setClassSelectorOpen(false)}
+        onConfirm={handleClassConfirm}
+        initialClass={classData.id}
+      />
       
     </Box>
   );
