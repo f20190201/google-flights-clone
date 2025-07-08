@@ -233,15 +233,15 @@ const FlightResults = () => {
   return (
     <Box sx={{ maxWidth: '1000px', margin: '0 auto', padding: '20px' }}>
       {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-        <IconButton onClick={handleBackToSearch} sx={{ mr: 2 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 1 }}>
+        <IconButton onClick={handleBackToSearch} sx={{ mr: { xs: 1, md: 2 } }}>
           <ArrowBack />
         </IconButton>
-        <Box>
-          <Typography variant="h5" sx={{ fontWeight: 600, color: '#202124' }}>
+        <Box sx={{ minWidth: 0, flex: 1 }}>
+          <Typography variant="h5" sx={{ fontWeight: 600, color: '#202124', fontSize: { xs: '1.2rem', md: '1.5rem' } }}>
             {searchData.originName} → {searchData.destinationName}
           </Typography>
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
             {formatDate(searchData.departureDate)} • {searchData.adults} passenger{searchData.adults > 1 ? 's' : ''} • {searchData.cabinClass}
           </Typography>
         </Box>
@@ -249,7 +249,7 @@ const FlightResults = () => {
 
       {/* Filters Bar */}
       <Box sx={{ mb: 3 }}>
-        <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}>
+        <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap', gap: 1, overflowX: { xs: 'auto', md: 'visible' }, pb: { xs: 1, md: 0 } }}>
           <Badge badgeContent={getActiveFilterCount(filters)} color="primary" invisible={getActiveFilterCount(filters) === 0}>
             <Button
               variant="outlined"
@@ -305,11 +305,11 @@ const FlightResults = () => {
 
       {/* Sort Tabs */}
       <Box sx={{ mb: 3 }}>
-        <Grid container spacing={2}>
+        <Grid container spacing={{ xs: 1, md: 2 }}>
           <Grid item xs={6}>
             <Paper
               sx={{
-                p: 2,
+                p: { xs: 1.5, md: 2 },
                 backgroundColor: sortBy === 'best' ? '#e8f0fe' : '#f8f9fa',
                 border: sortBy === 'best' ? '2px solid #1976d2' : '1px solid #dadce0',
                 cursor: 'pointer',
@@ -317,10 +317,10 @@ const FlightResults = () => {
               }}
               onClick={() => setSortBy('best')}
             >
-              <Typography variant="h6" sx={{ fontWeight: 600, color: '#202124' }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, color: '#202124', fontSize: { xs: '1rem', md: '1.25rem' } }}>
                 Best
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
                 Ranked based on price and convenience
               </Typography>
             </Paper>
@@ -328,7 +328,7 @@ const FlightResults = () => {
           <Grid item xs={6}>
             <Paper
               sx={{
-                p: 2,
+                p: { xs: 1.5, md: 2 },
                 backgroundColor: sortBy === 'cheapest' ? '#e8f0fe' : '#f8f9fa',
                 border: sortBy === 'cheapest' ? '2px solid #1976d2' : '1px solid #dadce0',
                 cursor: 'pointer',
@@ -336,10 +336,10 @@ const FlightResults = () => {
               }}
               onClick={() => setSortBy('cheapest')}
             >
-              <Typography variant="h6" sx={{ fontWeight: 600, color: '#202124' }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, color: '#202124', fontSize: { xs: '1rem', md: '1.25rem' } }}>
                 Cheapest
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
                 from ₹{cheapestPrice?.toLocaleString()}
               </Typography>
             </Paper>
@@ -364,85 +364,143 @@ const FlightResults = () => {
       <Box sx={{ mb: 4 }}>
         {sortedFlights.map((flight, index) => (
           <Card key={flight.id} sx={{ mb: 2, border: '1px solid #dadce0', borderRadius: '8px', '&:hover': { boxShadow: 2 } }}>
-            <CardContent sx={{ p: 3 }}>
+            <CardContent sx={{ p: { xs: 2, md: 3 } }}>
               {flight.legs.map((leg, legIndex) => (
                 <Box key={leg.id} sx={{ mb: legIndex < flight.legs.length - 1 ? 3 : 0 }}>
-                  <Grid container spacing={2} alignItems="center">
-                    {/* Airline Logo */}
-                    <Grid item xs={1}>
-                      <Avatar
-                        src={leg.carriers.marketing[0]?.logoUrl}
-                        sx={{ width: 32, height: 32 }}
-                      />
-                    </Grid>
+                  {/* Desktop Layout */}
+                  <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+                    <Grid container spacing={2} alignItems="center">
+                      {/* Airline Logo */}
+                      <Grid item xs={1}>
+                        <Avatar
+                          src={leg.carriers.marketing[0]?.logoUrl}
+                          sx={{ width: 32, height: 32 }}
+                        />
+                      </Grid>
 
-                    {/* Flight Times */}
-                    <Grid item xs={2}>
-                      <Typography variant="h6" sx={{ fontWeight: 600, color: '#202124' }}>
-                        {formatTime(leg.departure)} – {formatTime(leg.arrival)}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {leg.carriers.marketing[0]?.name}
-                      </Typography>
-                    </Grid>
+                      {/* Flight Times */}
+                      <Grid item xs={2}>
+                        <Typography variant="h6" sx={{ fontWeight: 600, color: '#202124' }}>
+                          {formatTime(leg.departure)} – {formatTime(leg.arrival)}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {leg.carriers.marketing[0]?.name}
+                        </Typography>
+                      </Grid>
 
-                    {/* Duration */}
-                    <Grid item xs={2}>
-                      <Typography variant="body2" sx={{ fontWeight: 500, color: '#202124' }}>
-                        {formatDuration(leg.durationInMinutes)}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {leg.origin.displayCode}–{leg.destination.displayCode}
-                      </Typography>
-                    </Grid>
-
-                    {/* Stops */}
-                    <Grid item xs={2}>
-                      <Typography variant="body2" sx={{ fontWeight: 500, color: '#202124' }}>
-                        {leg.stopCount === 0 ? 'Nonstop' : `${leg.stopCount} stop${leg.stopCount > 1 ? 's' : ''}`}
-                      </Typography>
-                    </Grid>
-
-                    {/* Emissions */}
-                    <Grid item xs={2}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      {/* Duration */}
+                      <Grid item xs={2}>
                         <Typography variant="body2" sx={{ fontWeight: 500, color: '#202124' }}>
-                          {flight.sustainabilityData?.totalEmissions || 0} kg CO2e
+                          {formatDuration(leg.durationInMinutes)}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {leg.origin.displayCode}–{leg.destination.displayCode}
+                        </Typography>
+                      </Grid>
+
+                      {/* Stops */}
+                      <Grid item xs={2}>
+                        <Typography variant="body2" sx={{ fontWeight: 500, color: '#202124' }}>
+                          {leg.stopCount === 0 ? 'Nonstop' : `${leg.stopCount} stop${leg.stopCount > 1 ? 's' : ''}`}
+                        </Typography>
+                      </Grid>
+
+                      {/* Emissions */}
+                      <Grid item xs={2}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <Typography variant="body2" sx={{ fontWeight: 500, color: '#202124' }}>
+                            {flight.sustainabilityData?.totalEmissions || 0} kg CO2e
+                          </Typography>
+                        </Box>
+                        <Typography 
+                          variant="caption" 
+                          sx={{ 
+                            color: getEmissionColor(flight.sustainabilityData?.emissionCategory || 'medium'),
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 0.5
+                          }}
+                        >
+                          {flight.sustainabilityData?.emissionPercentage > 0 ? '+' : ''}{flight.sustainabilityData?.emissionPercentage || 0}% {getEmissionText(flight.sustainabilityData?.emissionPercentage || 0)}
+                        </Typography>
+                      </Grid>
+
+                      {/* Price */}
+                      <Grid item xs={2}>
+                        <Typography variant="h6" sx={{ fontWeight: 600, color: '#202124', textAlign: 'right' }}>
+                          {flight.price.formatted}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'right' }}>
+                          {searchData.tripType === 'roundtrip' ? 'round trip' : 'one way'}
+                        </Typography>
+                      </Grid>
+
+                      {/* Expand Button */}
+                      <Grid item xs={1}>
+                        <IconButton 
+                          onClick={() => toggleFlightDetails(flight.id)}
+                          size="small"
+                        >
+                          {expandedFlight === flight.id ? <ExpandLess /> : <ExpandMore />}
+                        </IconButton>
+                      </Grid>
+                    </Grid>
+                  </Box>
+
+                  {/* Mobile Layout */}
+                  <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                      {/* Left: Airline and Times */}
+                      <Box sx={{ flex: 1 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                          <Avatar
+                            src={leg.carriers.marketing[0]?.logoUrl}
+                            sx={{ width: 24, height: 24 }}
+                          />
+                          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                            {leg.carriers.marketing[0]?.name}
+                          </Typography>
+                        </Box>
+                        <Typography variant="h6" sx={{ fontWeight: 600, color: '#202124', fontSize: '1rem' }}>
+                          {formatTime(leg.departure)} – {formatTime(leg.arrival)}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                          {leg.origin.displayCode}–{leg.destination.displayCode}
                         </Typography>
                       </Box>
-                      <Typography 
-                        variant="caption" 
-                        sx={{ 
-                          color: getEmissionColor(flight.sustainabilityData?.emissionCategory || 'medium'),
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 0.5
-                        }}
-                      >
-                        {flight.sustainabilityData?.emissionPercentage > 0 ? '+' : ''}{flight.sustainabilityData?.emissionPercentage || 0}% {getEmissionText(flight.sustainabilityData?.emissionPercentage || 0)}
+                      
+                      {/* Right: Price and Expand */}
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Box sx={{ textAlign: 'right' }}>
+                          <Typography variant="h6" sx={{ fontWeight: 600, color: '#202124', fontSize: '1rem' }}>
+                            {flight.price.formatted}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                            {searchData.tripType === 'roundtrip' ? 'round trip' : 'one way'}
+                          </Typography>
+                        </Box>
+                        <IconButton 
+                          onClick={() => toggleFlightDetails(flight.id)}
+                          size="small"
+                        >
+                          {expandedFlight === flight.id ? <ExpandLess /> : <ExpandMore />}
+                        </IconButton>
+                      </Box>
+                    </Box>
+                    
+                    {/* Bottom: Duration, Stops, Emissions */}
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 500, color: '#202124', fontSize: '0.875rem' }}>
+                        {formatDuration(leg.durationInMinutes)}
                       </Typography>
-                    </Grid>
-
-                    {/* Price */}
-                    <Grid item xs={2}>
-                      <Typography variant="h6" sx={{ fontWeight: 600, color: '#202124', textAlign: 'right' }}>
-                        {flight.price.formatted}
+                      <Typography variant="body2" sx={{ fontWeight: 500, color: '#202124', fontSize: '0.875rem' }}>
+                        {leg.stopCount === 0 ? 'Nonstop' : `${leg.stopCount} stop${leg.stopCount > 1 ? 's' : ''}`}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'right' }}>
-                        {searchData.tripType === 'roundtrip' ? 'round trip' : 'one way'}
+                      <Typography variant="body2" sx={{ fontWeight: 500, color: '#202124', fontSize: '0.875rem' }}>
+                        {flight.sustainabilityData?.totalEmissions || 0} kg CO2e
                       </Typography>
-                    </Grid>
-
-                    {/* Expand Button */}
-                    <Grid item xs={1}>
-                      <IconButton 
-                        onClick={() => toggleFlightDetails(flight.id)}
-                        size="small"
-                      >
-                        {expandedFlight === flight.id ? <ExpandLess /> : <ExpandMore />}
-                      </IconButton>
-                    </Grid>
-                  </Grid>
+                    </Box>
+                  </Box>
 
                   {/* Expanded Flight Details */}
                   <Collapse in={expandedFlight === flight.id}>
@@ -471,30 +529,42 @@ const FlightResults = () => {
       </Box>
 
       {/* Track Prices Section */}
-      <Paper sx={{ p: 3, mb: 3, backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <TrendingUp sx={{ color: '#1976d2' }} />
-          <Box>
-            <Typography variant="h6" sx={{ fontWeight: 600, color: '#202124' }}>
+      <Paper sx={{ p: { xs: 2, md: 3 }, mb: 3, backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: { xs: 'wrap', md: 'nowrap' } }}>
+          <TrendingUp sx={{ color: '#1976d2', display: { xs: 'none', md: 'block' } }} />
+          <Box sx={{ flex: { xs: '1 1 100%', md: 'initial' }, mb: { xs: 2, md: 0 } }}>
+            <Typography variant="h6" sx={{ fontWeight: 600, color: '#202124', fontSize: { xs: '1rem', md: '1.25rem' } }}>
               Track prices
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
               Get notified when prices change for this route
             </Typography>
           </Box>
-          <Box sx={{ flexGrow: 1 }} />
-          <Box sx={{ display: 'flex', gap: 1 }}>
+          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'block' } }} />
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', width: { xs: '100%', md: 'auto' } }}>
             <Button
               variant="outlined"
               startIcon={<CalendarToday />}
-              sx={{ borderRadius: '20px', textTransform: 'none' }}
+              sx={{ 
+                borderRadius: '20px', 
+                textTransform: 'none',
+                fontSize: { xs: '0.75rem', md: '0.875rem' },
+                px: { xs: 2, md: 3 },
+                flex: { xs: 1, md: 'initial' }
+              }}
             >
               Date grid
             </Button>
             <Button
               variant="outlined"
               startIcon={<ShowChart />}
-              sx={{ borderRadius: '20px', textTransform: 'none' }}
+              sx={{ 
+                borderRadius: '20px', 
+                textTransform: 'none',
+                fontSize: { xs: '0.75rem', md: '0.875rem' },
+                px: { xs: 2, md: 3 },
+                flex: { xs: 1, md: 'initial' }
+              }}
             >
               Price graph
             </Button>
@@ -514,61 +584,144 @@ const FlightResults = () => {
         {/* Show a subset of flights for "other departing flights" */}
         {sortedFlights.slice(Math.floor(sortedFlights.length / 2)).map((flight, index) => (
           <Card key={`other-${flight.id}`} sx={{ mb: 2, border: '1px solid #dadce0', borderRadius: '8px' }}>
-            <CardContent sx={{ p: 3 }}>
+            <CardContent sx={{ p: { xs: 2, md: 3 } }}>
               {flight.legs.slice(0, 1).map((leg) => (
-                <Grid container spacing={2} alignItems="center" key={leg.id}>
-                  <Grid item xs={1}>
-                    <Avatar
-                      src={leg.carriers.marketing[0]?.logoUrl}
-                      sx={{ width: 32, height: 32 }}
-                    />
-                  </Grid>
-                  <Grid item xs={2}>
-                    <Typography variant="h6" sx={{ fontWeight: 600, color: '#202124' }}>
-                      {formatTime(leg.departure)} – {formatTime(leg.arrival)}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {leg.carriers.marketing[0]?.name}
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={2}>
-                    <Typography variant="body2" sx={{ fontWeight: 500, color: '#202124' }}>
-                      {formatDuration(leg.durationInMinutes)}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {leg.origin.displayCode}–{leg.destination.displayCode}
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={2}>
-                    <Typography variant="body2" sx={{ fontWeight: 500, color: '#202124' }}>
-                      {leg.stopCount === 0 ? 'Nonstop' : `${leg.stopCount} stop${leg.stopCount > 1 ? 's' : ''}`}
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={2}>
-                    <Typography variant="body2" sx={{ fontWeight: 500, color: '#202124' }}>
-                      {flight.sustainabilityData?.totalEmissions || 0} kg CO2e
-                    </Typography>
-                    <Typography 
-                      variant="caption" 
-                      sx={{ color: getEmissionColor(flight.sustainabilityData?.emissionCategory || 'medium') }}
-                    >
-                      {flight.sustainabilityData?.emissionPercentage > 0 ? '+' : ''}{flight.sustainabilityData?.emissionPercentage || 0}% emissions
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={2}>
-                    <Typography variant="h6" sx={{ fontWeight: 600, color: '#202124', textAlign: 'right' }}>
-                      {flight.price.formatted}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'right' }}>
-                      round trip
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={1}>
-                    <IconButton size="small">
-                      <ExpandMore />
-                    </IconButton>
-                  </Grid>
-                </Grid>
+                <Box key={leg.id}>
+                  {/* Desktop Layout */}
+                  <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+                    <Grid container spacing={2} alignItems="center">
+                      <Grid item xs={1}>
+                        <Avatar
+                          src={leg.carriers.marketing[0]?.logoUrl}
+                          sx={{ width: 32, height: 32 }}
+                        />
+                      </Grid>
+                      <Grid item xs={2}>
+                        <Typography variant="h6" sx={{ fontWeight: 600, color: '#202124' }}>
+                          {formatTime(leg.departure)} – {formatTime(leg.arrival)}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {leg.carriers.marketing[0]?.name}
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={2}>
+                        <Typography variant="body2" sx={{ fontWeight: 500, color: '#202124' }}>
+                          {formatDuration(leg.durationInMinutes)}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {leg.origin.displayCode}–{leg.destination.displayCode}
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={2}>
+                        <Typography variant="body2" sx={{ fontWeight: 500, color: '#202124' }}>
+                          {leg.stopCount === 0 ? 'Nonstop' : `${leg.stopCount} stop${leg.stopCount > 1 ? 's' : ''}`}
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={2}>
+                        <Typography variant="body2" sx={{ fontWeight: 500, color: '#202124' }}>
+                          {flight.sustainabilityData?.totalEmissions || 0} kg CO2e
+                        </Typography>
+                        <Typography 
+                          variant="caption" 
+                          sx={{ color: getEmissionColor(flight.sustainabilityData?.emissionCategory || 'medium') }}
+                        >
+                          {flight.sustainabilityData?.emissionPercentage > 0 ? '+' : ''}{flight.sustainabilityData?.emissionPercentage || 0}% emissions
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={2}>
+                        <Typography variant="h6" sx={{ fontWeight: 600, color: '#202124', textAlign: 'right' }}>
+                          {flight.price.formatted}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'right' }}>
+                          round trip
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={1}>
+                        <IconButton 
+                          onClick={() => toggleFlightDetails(flight.id)}
+                          size="small"
+                        >
+                          {expandedFlight === flight.id ? <ExpandLess /> : <ExpandMore />}
+                        </IconButton>
+                      </Grid>
+                    </Grid>
+                  </Box>
+
+                  {/* Mobile Layout */}
+                  <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                      {/* Left: Airline and Times */}
+                      <Box sx={{ flex: 1 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                          <Avatar
+                            src={leg.carriers.marketing[0]?.logoUrl}
+                            sx={{ width: 24, height: 24 }}
+                          />
+                          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                            {leg.carriers.marketing[0]?.name}
+                          </Typography>
+                        </Box>
+                        <Typography variant="h6" sx={{ fontWeight: 600, color: '#202124', fontSize: '1rem' }}>
+                          {formatTime(leg.departure)} – {formatTime(leg.arrival)}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                          {leg.origin.displayCode}–{leg.destination.displayCode}
+                        </Typography>
+                      </Box>
+                      
+                      {/* Right: Price and Expand */}
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Box sx={{ textAlign: 'right' }}>
+                          <Typography variant="h6" sx={{ fontWeight: 600, color: '#202124', fontSize: '1rem' }}>
+                            {flight.price.formatted}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                            round trip
+                          </Typography>
+                        </Box>
+                        <IconButton 
+                          onClick={() => toggleFlightDetails(flight.id)}
+                          size="small"
+                        >
+                          {expandedFlight === flight.id ? <ExpandLess /> : <ExpandMore />}
+                        </IconButton>
+                      </Box>
+                    </Box>
+                    
+                    {/* Bottom: Duration, Stops, Emissions */}
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 500, color: '#202124', fontSize: '0.875rem' }}>
+                        {formatDuration(leg.durationInMinutes)}
+                      </Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 500, color: '#202124', fontSize: '0.875rem' }}>
+                        {leg.stopCount === 0 ? 'Nonstop' : `${leg.stopCount} stop${leg.stopCount > 1 ? 's' : ''}`}
+                      </Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 500, color: '#202124', fontSize: '0.875rem' }}>
+                        {flight.sustainabilityData?.totalEmissions || 0} kg CO2e
+                      </Typography>
+                    </Box>
+                  </Box>
+
+                  {/* Expanded Flight Details */}
+                  <Collapse in={expandedFlight === flight.id}>
+                    <Divider sx={{ my: 2 }} />
+                    <Box sx={{ pl: 5 }}>
+                      {leg.segments.map((segment, segIndex) => (
+                        <Box key={segment.id} sx={{ mb: 2 }}>
+                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                            {segment.marketingCarrier.name} {segment.flightNumber}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {formatTime(segment.departure)} - {formatTime(segment.arrival)}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {segment.origin.name} → {segment.destination.name}
+                          </Typography>
+                        </Box>
+                      ))}
+                    </Box>
+                  </Collapse>
+                </Box>
               ))}
             </CardContent>
           </Card>

@@ -711,9 +711,15 @@ const FlightSearch = () => {
                   padding: '8px 24px',
                   borderRadius: '8px',
                   marginRight: '8px',
+                  '&:hover': {
+                    backgroundColor: '#f5f5f5',
+                  },
                   '&.Mui-selected': {
                     backgroundColor: '#1976d2',
                     color: 'white',
+                    '&:hover': {
+                      backgroundColor: '#1565c0',
+                    }
                   }
                 }
               }}
