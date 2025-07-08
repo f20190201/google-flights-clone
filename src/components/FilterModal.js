@@ -32,7 +32,7 @@ import {
   AttachMoney,
 } from '@mui/icons-material';
 
-const FilterModal = ({ open, onClose, filters, onFiltersChange, flights }) => {
+const FilterModal = ({ open, onClose, filters, onFiltersChange, flights, currency = 'INR' }) => {
   const [localFilters, setLocalFilters] = useState(filters);
   const [activeTab, setActiveTab] = useState(0);
 
@@ -84,6 +84,22 @@ const FilterModal = ({ open, onClose, filters, onFiltersChange, flights }) => {
     const m = Math.round((hour - h) * 60);
     return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
   };
+
+  const currencyRates = {
+    INR: 1,
+    USD: 0.012,
+    EUR: 0.011,
+    GBP: 0.0095,
+    JPY: 1.7,
+  };
+  const currencySymbols = {
+    INR: '₹',
+    USD: '$',
+    EUR: '€',
+    GBP: '£',
+    JPY: '¥',
+  };
+  const formatCurrency = (val) => `${currencySymbols[currency]}${(val * currencyRates[currency]).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
 
   const StopsFilter = () => (
     <Box>
@@ -176,21 +192,21 @@ const FilterModal = ({ open, onClose, filters, onFiltersChange, flights }) => {
       <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>Price</Typography>
       <Box sx={{ px: 2 }}>
         <Slider
-          value={localFilters.priceRange}
-          onChange={(e, newValue) => setLocalFilters(prev => ({
+          value={localFilters.priceRange.map(v => v * currencyRates[currency])}
+          onChange={(e, val) => setLocalFilters(prev => ({
             ...prev,
-            priceRange: newValue
+            priceRange: val.map(x => Math.round(x / currencyRates[currency]))
           }))}
           valueLabelDisplay="auto"
           min={0}
-          max={2000}
-          step={50}
-          valueLabelFormat={(value) => `₹${value}`}
+          max={2000 * currencyRates[currency]}
+          step={50 * currencyRates[currency]}
+          valueLabelFormat={(value) => formatCurrency(value / currencyRates[currency])}
           sx={{ mt: 2 }}
         />
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
-          <Typography variant="body2">₹{localFilters.priceRange[0]}</Typography>
-          <Typography variant="body2">₹{localFilters.priceRange[1]}</Typography>
+          <Typography variant="body2">{formatCurrency(localFilters.priceRange[0])}</Typography>
+          <Typography variant="body2">{formatCurrency(localFilters.priceRange[1])}</Typography>
         </Box>
       </Box>
     </Box>

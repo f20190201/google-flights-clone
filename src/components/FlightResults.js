@@ -314,7 +314,8 @@ const FlightResults = () => {
           
           <PriceFilter 
             filters={filters} 
-            onFiltersChange={setFilters} 
+            onFiltersChange={setFilters}
+            currency={currency} 
           />
           
           <TimesFilter 
@@ -770,6 +771,7 @@ const FlightResults = () => {
         filters={filters}
         onFiltersChange={setFilters}
         flights={flightData?.data?.itineraries || []}
+        currency={currency}
       />
     </Box>
   );

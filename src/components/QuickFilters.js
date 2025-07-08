@@ -174,9 +174,25 @@ export const AirlinesFilter = ({ filters, onFiltersChange, flights }) => {
   );
 };
 
-export const PriceFilter = ({ filters, onFiltersChange }) => {
+export const PriceFilter = ({ filters, onFiltersChange, currency = 'INR' }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
+
+  const currencyRates = {
+    INR: 1,
+    USD: 0.012,
+    EUR: 0.011,
+    GBP: 0.0095,
+    JPY: 1.7,
+  };
+  const currencySymbols = {
+    INR: '₹',
+    USD: '$',
+    EUR: '€',
+    GBP: '£',
+    JPY: '¥',
+  };
+  const formatCurrency = (val) => `${currencySymbols[currency]}${(val * currencyRates[currency]).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -187,11 +203,15 @@ export const PriceFilter = ({ filters, onFiltersChange }) => {
   };
 
   const handlePriceChange = (event, newValue) => {
+    // Convert displayed currency back to INR for storage
+    const convertedToINR = newValue.map(v => Math.round(v / currencyRates[currency]));
     onFiltersChange({
       ...filters,
-      priceRange: newValue
+      priceRange: convertedToINR
     });
   };
+
+  const displayRange = filters.priceRange.map(v => v * currencyRates[currency]);
 
   const isActive = () => {
     return filters.priceRange[0] > 0 || filters.priceRange[1] < 2000;
@@ -213,18 +233,21 @@ export const PriceFilter = ({ filters, onFiltersChange }) => {
         <Box sx={{ p: 3, minWidth: 300 }}>
           <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>Price</Typography>
           <Slider
-            value={filters.priceRange}
-            onChange={handlePriceChange}
+            value={displayRange}
+            onChange={(e, val) => {
+              // val is in displayed currency, convert here for handlePriceChange
+              handlePriceChange(e, val);
+            }}
             valueLabelDisplay="auto"
             min={0}
-            max={2000}
-            step={50}
-            valueLabelFormat={(value) => `₹${value}`}
+            max={2000 * currencyRates[currency]}
+            step={50 * currencyRates[currency]}
+            valueLabelFormat={(value) => formatCurrency(value / currencyRates[currency])}
             sx={{ mt: 2 }}
           />
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
-            <Typography variant="body2">₹{filters.priceRange[0]}</Typography>
-            <Typography variant="body2">₹{filters.priceRange[1]}</Typography>
+            <Typography variant="body2">{formatCurrency(filters.priceRange[0])}</Typography>
+            <Typography variant="body2">{formatCurrency(filters.priceRange[1])}</Typography>
           </Box>
         </Box>
       </Menu>
