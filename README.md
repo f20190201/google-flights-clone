@@ -2,7 +2,7 @@
 
 A modern flight booking website clone built with React, Material-UI, and Tailwind CSS, featuring comprehensive mock flight data and a professional UI matching Google Flights design.
 
-***IMPORTANT:*** Since APIs could not be integrated due to payment issues, only a few airports are supported for search like **San Francisco, New York, Chicago, Miami, Denver etc**
+‼️***IMPORTANT:*** Since APIs could not be integrated due to payment issues, only a few airports are supported for search like **San Francisco, New York, Chicago, Miami, Denver etc**‼️
 
 ## Features
 
